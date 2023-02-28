@@ -30,9 +30,9 @@ def to_csv(mat):
             sub_data[f's{s}'] = list(map(cate, stims))
     
         # get relevant dim:
-        sub_data['relevantDim'] =  mat['DimTaskData'][0][0][3][:, i]
+        sub_data['relevantDim'] = mat['DimTaskData'][0][0][3][:, i]
         # get correct feature:
-        sub_data['relevantDim'] =  mat['DimTaskData'][0][0][3][:, i]
+        sub_data['correctPhi']  = mat['DimTaskData'][0][0][4][:, i]
         
         # construct a dataframe 
         sub_data = pd.DataFrame.from_dict(sub_data)
