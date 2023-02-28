@@ -1,0 +1,25 @@
+# ignore vs code system file
+*.vscode 
+*.ipynb
+*.ipynb_checkpoints
+*.DS_Store 
+utils/__pycache__/
+results.zip
+__pycache__/
+/*.DS_Store
+
+# ignore folder 
+figures/
+data/ 
+results/
+tables/
+fits/
+backup/
+simulations/
+analyses/
+
+# ignore some debug files
+debug.py 
+documents/
+screenlog.0
+text.py
