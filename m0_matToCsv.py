@@ -1,3 +1,7 @@
+'''Replicate some results in Niv 2015
+@ZF
+'''
+
 import os 
 import numpy as np 
 import pandas as pd
