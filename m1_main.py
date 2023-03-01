@@ -101,7 +101,7 @@ class naiveRL(baseAgent):
     def policy(self, stims):
 
         # Softmax(βV(s_i))
-        v_stims = [self.V[s] for s in stims]
+        v_stims = [self.V[s] for s in self.s_embed(stims)]
         return softmax(self.beta*v_stims)
     
     # --------- learning --------- #
@@ -119,6 +119,8 @@ class naiveRL(baseAgent):
         rpe = r - self.V[s_chosen]
         self.V[s_chosen] += self.eta*rpe 
 
+# ---------- RL models ----------- #
+
 class fRL(naiveRL):
     '''The feature RL'''
     name  = 'feature RL'
@@ -128,6 +130,7 @@ class fRL(naiveRL):
 
     def __init__(self, nD, nF, params):
         super().__init__(nD, nF, params)
+        self._init_W()
 
     def _init_W(self):
         self.W = np.zeros([self.nD*self.nF])
@@ -136,6 +139,15 @@ class fRL(naiveRL):
 
     def s_embed(self, s):
         return [to_phi(i) for i in s]
+    
+    # --------- decision --------- #
+
+    def policy(self, stims):
+
+        # Softmax(βV(s_i)): V(s_i) = ∑_fW(f)
+        v_stims = [(f*self.W).sum() 
+                   for f in self.s_embed(stims)]
+        return softmax(self.beta*v_stims)
     
     # --------- learning --------- #
 
@@ -172,8 +184,84 @@ class fRL_decay(fRL):
         self.update_V()
         
     def decay(self):
-        self.W -= self.d*self.W 
 
+        # retrieve memory 
+        ss, a = self.mem.sample('s', 'a')
+        f_chosen = self.s_phi(ss)[a]
+
+        # W(f) = (1-d)W(f)  ∀f is not chosen
+        f_unchosen = 1 - f_chosen
+        self.W -= self.d*self.W*f_unchosen
+
+# -------- Bayesian model ----------- #
+
+class bayes(fRL):
+    '''The bayesian learning model'''
+    name  = 'bayesian learning'
+    pname = ['β']
+
+    # ---------- init --------- #
+
+    def __init__(self, nD, nF, params):
+        super().__init__(nD, nF, params)
+        self._init_p_F()
+
+    def _init_p_F(self):
+        # The probability of each feature being 
+        # the target feature is initialized at 1/9 
+        # at the beginning of a game 
+        n = self.nD*self.nF
+        self.p_F = np.ones([n]) / n
+
+    # --------- decision --------- #
+
+    def policy(self, stims):
+        
+        # construct V(s)
+        ss = self.s_phi(stims)
+        for s in ss:
+            f = (np.eye(self.nD*self.nF)@s.reshape([-1, 1])).reshape([-1])
+
+        # Softmax(βV(s_i)): V(s_i) = ∑_fW(f)
+        v_stims = [(f*self.W).sum() 
+                   for f in self.s_embed(stims)]
+        return softmax(self.beta*v_stims)
+    
+    # --------- learning --------- #
+
+    def update(self):
+        self.update_Bel()
+
+    def update_Bel(self):
+        
+        # Retrieve memory 
+        ss, a, r = self.mem.sample('s', 'a', 'r')
+        f_chosen = (self.s_phi(ss)[a]).reshape([-1, 1])
+        
+        # update the belief according to Bayes' rule
+        # p(f) ∝ p(R|f, c)p(f)
+        # the first term is p=.75 or p=.25
+        # depending on the reward on the current
+        # whether the current c included f
+        # p=.75 if R=1 given current c included in f
+        # p=.25 if R=0 given current c included in f
+        # p=0   else
+        p_R1FC = (.25+.5*r*np.eye(self.nD*self.nF)@f_chosen).reshape([-1])
+        f_F    = p_R1FC*self.p_F
+        self.p_F = f_F / f_F.sum() 
+        
+        
+
+
+
+    
+    
+
+
+    
+
+    
+    
 
 
 
