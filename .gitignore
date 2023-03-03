@@ -9,8 +9,8 @@ __pycache__/
 
 # ignore folder 
 data/ 
-results/
 tables/
 fits/
 backup/
 sim_data/
+eval_data/

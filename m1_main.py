@@ -8,6 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt 
 import seaborn as sns 
 
+from tqdm import tqdm
+
 from scipy.special import softmax
 
 # self-defined visualization
@@ -417,9 +419,10 @@ def sim(data,
     '''
     sub_lst = data['sub_id'].unique() 
     for agent_name in agent_names:
+        print(f'\nSimulating {agent_name}......')
         agent = eval(agent_name)
         sim_data = []
-        for sub_id in sub_lst:
+        for sub_id in tqdm(sub_lst):
             sub_data = data.query(f'sub_id=={sub_id}').reset_index()
             game_lst = sub_data['game'].unique()
             for game_id in game_lst:
@@ -488,9 +491,10 @@ def evaluate(data,
     '''
     sub_lst = data['sub_id'].unique() 
     for agent_name in agent_names:
+        print(f'\nEvaluating {agent_name}......')
         agent = eval(agent_name)
         sim_data = []
-        for sub_id in sub_lst:
+        for sub_id in tqdm(sub_lst):
             sub_data = data.query(f'sub_id=={sub_id}').reset_index()
             game_lst = sub_data['game'].unique()
             for game_id in game_lst:
@@ -595,11 +599,11 @@ if __name__ == '__main__':
     data = pd.read_csv(f'{pth}/data/raw_data.csv', index_col=0)
 
     # generate simulate data
-    #sim(data)
-    #show_lr()
+    sim(data)
+    show_lr()
 
     # evaluate the model
-    #evaluate(data)
+    evaluate(data)
     show_likelihood()
 
 
