@@ -321,8 +321,9 @@ class hybrid(bayes):
 
     def learn(self):
         self.update_Bel()
+        self.update_V()
 
-    def update_Bel(self):
+    def update_V(self):
         
         # get data 
         stims, a, r = self.mem.sample('s', 'a', 'r')
