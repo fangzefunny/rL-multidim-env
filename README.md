@@ -23,6 +23,4 @@ We also redefined some variables to fit in the dataframe.
 
 The data is called "raw" but not literally is. We conducted a few preprocessings, including some nan value replacement. Please use the data from Niv's lab for a REAL research. 
 
-
-
-
+Run ```python m1_main.py``` to start. 
