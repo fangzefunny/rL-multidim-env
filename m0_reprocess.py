@@ -52,9 +52,35 @@ def to_csv(mat):
         # add to the data 
         data.append(sub_data)
 
+    data = pd.concat(data, axis=0, ignore_index=True)
+
+    # add trials and games columns to faciliate modeling
+    sub_lst = data['sub_id'].unique() 
+    new_data = pd.DataFrame(np.zeros([data.shape[0], 2]), 
+                            columns=['trial', 'game'])
+    r = 0
+    for sub_id in sub_lst:
+        sub_data = data.query(f'sub_id=={sub_id}').reset_index()
+        t, g = -1, 0 
+        prev_config = [sub_data.loc[0, 'relevantDim'], 
+                       sub_data.loc[0, 'correctPhi']]
+        for i, row in sub_data.iterrows():
+            config = [row['relevantDim'], row['correctPhi']]
+            if config == prev_config:
+                t += 1
+            else:
+                t = 0
+                g += 1
+            new_data.loc[r, 'trial'] = t
+            new_data.loc[r, 'game']  = g
+            prev_config = [row['relevantDim'], row['correctPhi']]
+            r += 1
+
     # pickle the data 
-    pd.concat(data, axis=0, ignore_index=True).to_csv(
-        f'{pth}/data/raw_data.csv')
+    con_data = pd.concat([data, new_data], axis=1)
+    covert_dict = {k: 'int' for k in ['s0', 's1', 's2', 'choice', 'trial', 'game']}
+    con_data = con_data.astype(covert_dict)
+    con_data.to_csv(f'{pth}/data/raw_data.csv')
     
 if __name__ == '__main__':
 
